@@ -1,0 +1,291 @@
+@font-face {
+    font-family: 'icomoon';
+    src:  url('fonts/icomoon.eot?yhxxvp');
+    src:  url('fonts/icomoon.eot?yhxxvp#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?yhxxvp') format('truetype'),
+    url('fonts/icomoon.woff?yhxxvp') format('woff'),
+    url('fonts/icomoon.svg?yhxxvp#icomoon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'icomoon' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-payumoney:before {
+    content: "\e900";
+}
+.icon-olark:before {
+    content: "\e901";
+}
+.icon-alipay:before {
+    content: "\e902";
+}
+.icon-ecwid:before {
+    content: "\e903";
+}
+.icon-ideal_payment:before {
+    content: "\e904";
+}
+.icon-pagseguro:before {
+    content: "\e905";
+}
+.icon-paysera:before {
+    content: "\e906";
+}
+.icon-skrill:before {
+    content: "\e907";
+}
+.icon-webmoney:before {
+    content: "\e908";
+}
+.icon-webpay:before {
+    content: "\e909";
+}
+.icon-dragonpay:before {
+    content: "\e90a";
+}
+.icon-easypay:before {
+    content: "\e90b";
+}
+.icon-liqpay:before {
+    content: "\e90c";
+}
+.icon-stripe:before {
+    content: "\e90d";
+}
+.icon-2checkout:before {
+    content: "\e90e";
+}
+.icon-mercado:before {
+    content: "\e90f";
+}
+.icon-qiwi:before {
+    content: "\e910";
+}
+.icon-robokassa:before {
+    content: "\e911";
+}
+.icon-yandex_kassa:before {
+    content: "\e912";
+}
+.icon-assist:before {
+    content: "\e913";
+}
+.icon-payfast:before {
+    content: "\e914";
+}
+.icon-iyzico:before {
+    content: "\e915";
+}
+.icon-linepay:before {
+    content: "\e916";
+}
+.icon-zopim:before {
+    content: "\e917";
+}
+.icon-7_connect:before {
+    content: "\e918";
+}
+.icon-tawkto:before {
+    content: "\e919";
+}
+.icon-Payme:before {
+    content: "\e91a";
+}
+.icon-gestpay:before {
+    content: "\e91b";
+}
+.icon-epaybg:before {
+    content: "\e91c";
+}
+.icon-mollie:before {
+    content: "\e91d";
+}
+.icon-braintree:before {
+    content: "\e91e";
+}
+.icon-platron:before {
+    content: "\e91f";
+}
+.icon-Bepaid:before {
+    content: "\e920";
+}
+.icon-effect:before {
+    content: "\e921";
+}
+.icon-Epsilon:before {
+    content: "\e922";
+}
+.icon-Click:before {
+    content: "\e923";
+}
+.icon-Redsys:before {
+    content: "\e924";
+}
+.icon-baokim:before {
+    content: "\e925";
+}
+.icon-mpesa:before {
+    content: "\e926";
+}
+.icon-Paytrail:before {
+    content: "\e927";
+}
+.icon-domain:before {
+    content: "\e928";
+}
+.icon-mix-layout:before {
+    content: "\e929";
+}
+.icon-block-layout:before {
+    content: "\e92a";
+}
+.icon-alignment-layout-horizontal:before {
+    content: "\e92b";
+}
+.icon-alignment-layout-vertical:before {
+    content: "\e92c";
+}
+.icon-gallery1:before {
+    content: "\e92d";
+}
+.icon-gallery2:before {
+    content: "\e92e";
+}
+.icon-gallery3:before {
+    content: "\e92f";
+}
+.icon-gallery4:before {
+    content: "\e930";
+}
+.icon-klarna1:before {
+    content: "\e931";
+}
+.icon-getbutton1:before {
+    content: "\e932";
+}
+.icon-paymentez:before {
+    content: "\e933";
+}
+.icon-mellat:before {
+    content: "\e934";
+}
+.icon-rounding-0:before {
+    content: "\e935";
+}
+.icon-rounding-1:before {
+    content: "\e936";
+}
+.icon-rounding-2:before {
+    content: "\e937";
+}
+.icon-rounding-3:before {
+    content: "\e938";
+}
+.icon-rounding-4:before {
+    content: "\e939";
+}
+.icon-zendesk:before {
+    content: "\e93a";
+}
+.icon-text-background-color:before {
+    content: "\e93b";
+}
+.icon-text-show-blocks:before {
+    content: "\e93c";
+}
+.icon-text-clear-format:before {
+    content: "\e93d";
+}
+.icon-text-color:before {
+    content: "\e93e";
+}
+.icon-alignment-bottom:before {
+    content: "\e93f";
+}
+.icon-line-dotted:before {
+    content: "\e940";
+}
+.icon-line-none:before {
+    content: "\e941";
+}
+.icon-line-solid:before {
+    content: "\e942";
+}
+.icon-line-dashed:before {
+    content: "\e943";
+}
+.icon-line-double:before {
+    content: "\e944";
+}
+.icon-text-left:before {
+    content: "\e945";
+}
+.icon-text-center:before {
+    content: "\e946";
+}
+.icon-text-right:before {
+    content: "\e947";
+}
+.icon-text-justify:before {
+    content: "\e948";
+}
+.icon-alignment-center-horizontal:before {
+    content: "\e949";
+}
+.icon-alignment-center-vertical:before {
+    content: "\e94a";
+}
+.icon-alignment-inside-mode:before {
+    content: "\e94b";
+}
+.icon-alignment-left:before {
+    content: "\e94c";
+}
+.icon-alignment-outside-mode:before {
+    content: "\e94d";
+}
+.icon-alignment-right:before {
+    content: "\e94e";
+}
+.icon-alignment-space-around-horizontal:before {
+    content: "\e94f";
+}
+.icon-alignment-space-around-vertical:before {
+    content: "\e950";
+}
+.icon-alignment-space-between-horizontal:before {
+    content: "\e951";
+}
+.icon-alignment-space-between-vertical:before {
+    content: "\e952";
+}
+.icon-alignment-stretch-horizontal:before {
+    content: "\e953";
+}
+.icon-alignment-stretch-vertical:before {
+    content: "\e954";
+}
+.icon-alignment-top:before {
+    content: "\e955";
+}
+.icon-adsense:before {
+    content: "\e956";
+}
+.icon-expresspay:before {
+    content: "\e959";
+}

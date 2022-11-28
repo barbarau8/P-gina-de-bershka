@@ -1,0 +1,43 @@
+
+CKEDITOR.plugins.add( 'wbsourcedialog', {
+	requires: 'dialog',
+	icons: 'wbsourcedialog',
+
+	init: function( editor ) {
+		var dialog;
+		editor.addCommand( 'wbsourcedialog', {
+			exec: function(editor) {
+				require(['Service'], function(Service) {
+					if (!dialog) {
+						dialog = new WB_Dialog(__('Source'));
+						dialog.setContent(new Service.Service.UIBuilder({
+							type: 'VerticalLayout', children: [
+								{type: 'Label', text: __('HTML code')},
+								{type: 'TextField', id: 'html', textArea: true, fixedWidth: 12, css: {height: 214, marginBottom: 0}}
+							]
+						}), dialog.fields);
+						dialog.removeAllButtons();
+						dialog.addButton(__('Close'));
+						dialog.addButton(__('Apply'), function() {
+							editor.setData(dialog.fields.html.getValue());
+							dialog.hide();
+						}, true);
+						dialog.onShow = function() {
+							dialog.fields.html.setValue(editor.getData());
+						};
+					}
+					dialog.setVisible(true);
+				});
+			}
+		});
+
+		// If the toolbar is available, create the "Source" button.
+		if ( editor.ui.addButton ) {
+			editor.ui.addButton( 'WBSourcedialog', {
+				label: __('Source'),
+				command: 'wbsourcedialog',
+				toolbar: 'mode,10'
+			} );
+		}
+	}
+} );

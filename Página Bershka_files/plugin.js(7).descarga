@@ -1,0 +1,98 @@
+CKEDITOR.plugins.add('languages', {
+	init: function(editor) {
+		require(['jquery'], function($) {
+			var wbConfig = wb_builder.wbConfig;
+			var langs = wb_builder.site.languages;
+			if (!langs.length) return;
+
+			var opts = {}, initOptIdx, currOptIdx;
+			var getLangCodeByName = function (langName) {
+				for (var i = 0, lang; (lang = langs[i]); i++) {
+					if (lang.name === langName) {
+						return lang.code;
+					}
+				}
+			};
+
+			for (var i = 0, lang; (lang = langs[i]); i++) {
+				opts[lang.name] = lang.name + ' (' + (lang.hrefLang ? lang.hrefLang : lang.code).toUpperCase() + ')';
+				if (lang.code === wb_builder.site.currSelLang) {
+					initOptIdx = currOptIdx = lang.name;
+					if (editor.wbTextAreaInstance) {
+						editor.wbTextAreaInstance.editorChosenLanguage = lang.code;
+					}
+				}
+			}
+			editor.ui.addRichCombo('Languages', {
+				type: 'select',
+				label: initOptIdx,
+				init: function () {
+					// Hack to prevent render() method from resetting value
+					if (!this.hasOwnProperty("_setValue")) {
+						this._setValue = this.setValue;
+						this.setValue = function (value) {
+							if (value === "")
+								return;
+							this._setValue.apply(this, arguments);
+						};
+					}
+
+					for (var i in opts) {
+						this.add(i, opts[i]);
+					}
+					this.wbOnChange(initOptIdx);
+
+					// change dropdown height
+					if ((dropdown = this.wbGetDropdownElem()) && dropdown.length) {
+						dropdown.addClass('dropdown_languages');
+						dropdown.before('<style type="text/css">.dropdown_languages {height: ' + (24 * Object.keys(opts).length + 6) + 'px;}</style>');
+					}
+				},
+				panel: {
+					css: [
+						editor.config.contentsCss,
+						CKEDITOR.getUrl('skins/' + CKEDITOR.skinName + '/editor.css'),
+						wbConfig.baseUrl + wb_builder.modBaseUrl + 'css/font-awesome/font-awesome.min.css',
+						wbConfig.baseUrl + wb_builder.modBaseUrl + 'css/site.css'
+					]
+				},
+				onClick: function (value) {
+					this.wbOnChange(value);
+				},
+				onOpen: function () {
+					// hack to prevent addition of &#8023; character among html
+					setTimeout(function () {
+						if (!editor.wbTextAreaInstance) return;
+						var html_arr = $(editor.wbTextAreaInstance.textDiv.html());
+						var new_html_arr = [];
+						$.each(html_arr, function () {
+							if (this.nodeType !== 3) {
+								new_html_arr.push(this);
+							}
+						});
+						editor.wbTextAreaInstance.textDiv.empty().append(new_html_arr);
+					}, 10);
+				},
+				wbOnChange: function (langName) {
+					if (Object.keys(opts).length === 1 || !editor.wbTextAreaInstance) return;
+					var langCode;
+					for (var idx in opts) {
+						if (idx === langName) {
+							if ((langCode = getLangCodeByName(langName))) {
+								editor.wbTextAreaInstance.setValue(editor.wbTextAreaInstance.textDiv.html(), getLangCodeByName(currOptIdx));
+								editor.wbTextAreaInstance.onSwitchLanguage(langCode, true);
+								currOptIdx = langName;
+								editor.wbTextAreaInstance.editorChosenLanguage = langCode;
+							}
+							this.setValue(langName);
+							return;
+						}
+					}
+				},
+				wbGetDropdownElem: function () {
+					return $(this._.panel.element.$);
+				}
+			});
+		});
+	}
+});

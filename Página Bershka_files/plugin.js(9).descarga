@@ -1,0 +1,415 @@
+
+require(['jquery', 'Service'], function ($, Service) {
+
+/* global CKEDITOR */
+CKEDITOR.plugins.add('wbimage', {
+	requires: 'dialog',
+	icons: 'wbimage',
+
+	init: function (editor) {
+		
+		var editDialog;
+		
+		editor.addCommand('add_wbimage', {
+			exec: function (editor) {
+				var addDialog = Service.Service.mediaLibrary.open(__("Change picture"), null, 'image', true, false);
+				addDialog.addButton(__("Cancel"));
+				addDialog.addButton(__("Select"), function () {
+					var list = addDialog.getSelectedFiles();
+					var src = wb_builder.makeLocalUrl(list[0]);
+					var img = new Image();
+					img.onload = function() {
+						var area = 200*200;
+						var imgW = this.width;
+						var imgH = this.height;
+						var koef = Math.min(Math.sqrt(area / (imgW * imgH)), 1);
+						var attributes = {};
+						attributes.src = src;
+						attributes.width = Math.round(imgW * koef);
+						attributes.height = Math.round(imgH * koef);
+						var style = new CKEDITOR.style({element: 'img', attributes: attributes});
+						var selection = editor.getSelection();
+						var element = selection.getSelectedElement();
+						style.type = CKEDITOR.STYLE_INLINE;
+						if (!element) {
+							var range = selection.getRanges(1)[0];
+							style.applyToRange(range);
+							range.select();
+						} else
+							style.applyToObject(element);
+						addDialog.hide();
+					};
+					img.src = src;
+				}, true);
+				addDialog.setVisible(true);
+			},
+			allowedContent: 'img[src]{*}(*)'
+		});
+
+		editor.addCommand('edit_wbimage', {
+			exec: function (editor) {
+				require(['UIButton', 'require'], function(UIButton, require) {
+					var RoundCornersControl = require('RoundCornersControl').RoundCornersControl;
+					var BorderControl = require('BorderControl').BorderControl;
+					var SpacingSelector = require('SpacingSelector').SpacingSelector;
+					var element = CKEDITOR.plugins.wbimages.getSelectedImage(editor);
+					if (!element) return;
+					
+					var $elem = $(element.$);
+					var data = {};
+					
+					data.imageUrl = element.$.src;
+					try {
+						data.alt = JSON.parse(element.$.alt);
+					} catch (e) {
+						data.alt = element.$.alt;
+					}
+					data.enlarge = ($elem.attr('data-enlarge') === 'true');
+					data.sizeW = element.$.width ? element.$.width : 0;
+					data.sizeH = element.$.height ? element.$.height : 0;
+					data.opacity = 100;
+					data.float = 'none';
+					
+					var tmp;
+					if ((tmp = parseInt($elem.css('max-width')))) data.sizeW = tmp;
+					if ((tmp = parseInt($elem.css('max-height')))) data.sizeH = tmp;
+					var spacingData = {
+						marginTop: ((tmp = parseInt($elem.css('margin-top'))) ? tmp : 0),
+						marginRight: ((tmp = parseInt($elem.css('margin-right'))) ? tmp : 0),
+						marginBottom: ((tmp = parseInt($elem.css('margin-bottom'))) ? tmp : 0),
+						marginLeft: ((tmp = parseInt($elem.css('margin-left'))) ? tmp : 0),
+						paddingTop: ((tmp = parseInt($elem.css('padding-top'))) ? tmp : 0),
+						paddingRight: ((tmp = parseInt($elem.css('padding-right'))) ? tmp : 0),
+						paddingBottom: ((tmp = parseInt($elem.css('padding-bottom'))) ? tmp : 0),
+						paddingLeft: ((tmp = parseInt($elem.css('padding-left'))) ? tmp : 0)
+					};
+					
+					var styleRaw = element.$.style;
+					if (styleRaw.cssText && styleRaw.cssText !== '') {
+						var rules = styleRaw.cssText.split(';');
+						var style = {};
+						for (var idx in rules) {
+							if (rules[idx] && rules[idx] !== '') {
+								var parts = rules[idx].split(':');
+								style[parts[0].trim()] = parts[1].trim().replace(/px/g, '');
+							}
+						}
+						if (('float' in style) && style.float) {
+							data.float = style.float;
+						}
+						if ('opacity' in style) {
+							var o = parseFloat(style.opacity);
+							data.opacity = o * 100;
+						}
+						if ('border-radius' in style) {
+							var w = style['border-radius'].replace(/px/g, '').split(' ');
+							if (w.length > 0)
+								data.corners = {
+									lt: w[0],
+									rt: w[1] || w[0],
+									rb: w[2] || w[0],
+									lb: w[3] || (w[1] || w[0])
+								};
+						}
+						if ('border' in style && Object.keys(style.border).length > 0) {
+							var color = /rgb\(.+\)/.exec(style.border);
+							var b = style.border.replace(/[px|rgb\(.+\)]/g, '').split(' ');
+							if (b.length > 0) {
+								data.border = {
+									color: [color[0], color[0], color[0], color[0]],
+									style: [b[1], b[1], b[1], b[1]],
+									weight: [b[0], b[0], b[0], b[0]]
+								};
+							}
+						}
+						if ("border-style" in style) {
+							var bs = data["border-style"].split(' ');
+							if (bs.length > 0) {
+								data.border.style = [
+									bs[0],
+									bs[1] || bs[0],
+									bs[2] || bs[0],
+									bs[3] || (bs[0] || bs[1])
+								];
+								data.border.differ = true;
+							}
+						}
+						if ("border-color" in data) {
+							var colorb = data["border-color"].replace(/, /g, ',').split(' ');
+							if (colorb.length > 0) {
+								data.border.color = [
+									colorb[0],
+									colorb[1] || colorb[0],
+									colorb[2] || colorb[0],
+									colorb[3] || (colorb[0] || colorb[1])
+								];
+								data.border.differ = true;
+							}
+						}
+						if ("border-width" in data) {
+							var bw = data["border-width"].replace(/px/g, '').split(' ');
+							if (bw.length > 0) {
+								data.border.weight = [
+									bw[0],
+									bw[1] || bw[0],
+									bw[2] || bw[0],
+									bw[3] || (bw[0] || bw[1])
+								];
+								data.border.differ = true;
+							}
+						}
+						if ("max-width" in style) {
+							var w = style['max-width'].replace(/px/, '');
+							data.sizeW = w;
+						}
+						if ("max-height" in style) {
+							var w = style['max-height'].replace(/px/, '');
+							data.sizeH = w;
+						}
+					}
+					if (!data.border || Object.keys(data.border).length === 0) {
+						data.border = {
+							color: ['#000000', '#000000', '#000000', '#000000'],
+							style: ['none', 'none', 'none', 'none'],
+							weight: [1, 1, 1, 1],
+							differ: false
+						};
+					}
+					if (!data.sizeW || !data.sizeH) {
+						var img = new Image();
+						img.onload = function () {
+							editDialog.fields.sizeW.setValue(this.width);
+							editDialog.fields.sizeH.setValue(this.height);
+						};
+						img.src = data.imageUrl;
+					}
+					if (!editDialog) {
+						var uiDef = {
+							size: {minBodyHeight: 350},
+							aspectSet: false,
+							sizeOrig: {},
+							tabs: [
+								{name: __('General'), children: [
+									{type: 'HorizontalLayout', columnWeights: [5, 7], children: [
+										{type: 'VerticalLayout', children: [
+											{type: 'Label', text: __('Picture')},
+											{type: 'ImageSelector', id: 'imageUrl', thumbSize: 140, fontAwesomeTab: false, select: function(fields) {
+												var item = this.getValues(true)[0];
+												var clb = function(imgW, imgH) {
+													var area = 200*200;
+													var koef = Math.min(Math.sqrt(area / (imgW * imgH)), 1);
+													fields.sizeW.setValue(Math.round(imgW * koef));
+													fields.sizeH.setValue(Math.round(imgH * koef));
+												};
+												if (item.width > 0 && item.height > 0) {
+													clb(item.width, item.height);
+												} else {
+													var img = new Image();
+													img.onload = function() { clb(this.width, this.height); };
+													img.src = wb_builder.makeLocalUrl(item.file);
+												}
+											}},
+											{type: 'VerticalLayout', css: {marginTop: 15}, children: [
+												{type: 'Label', text: __('Opacity (%)')},
+												{type: 'SliderControl', id: 'opacity', width: 120}
+											]},
+											{type: 'FlowLayout', css: {marginTop: 15}, spacing: 40, children: [
+												{type: 'VerticalLayout', id: 'borderBlock', children: [
+													{type: 'Label', text: __('Border')},
+													{type: BorderControl, id: 'border'}
+												]}
+											]},
+											{type: 'VerticalLayout', css: {marginTop: 15}, id: 'cornersBlock', children: [
+												{type: 'Label', text: __('Rounded corners')},
+												{type: RoundCornersControl, id: 'corners'}
+											]}
+										]},
+										{type: 'VerticalLayout', children: [
+											{type: 'Label', text: __('Alternative Text'), helpText: __('Information for an image if a user for some reason cannot view it')},
+											{type: 'MultilangTextField', id: 'alt'},
+											{type: 'CheckBox', id: 'linkTypeEnlarge', label: __('Enlarge picture on click'), css: {marginTop: 20}, value: false},
+											{type: 'VerticalLayout', id: 'sizeBlock', css: {marginTop: 15}, children: [
+												{type: 'Label', text: __('Size')},
+												{type: 'FlowLayout', verticalAlign: 'middle', css: { marginRight: '160px', textAlign: 'right' }, children: [
+													{type: 'Label', text: __('Width'), css: { marginBottom: '0px', fontWeight: 'normal' }},
+													{type: 'TextField', id: 'sizeW', css: {width: 60}, styleClass: 'input-sm'},
+													{type: 'Label', text: ' px', css: { marginBottom: '0px', fontWeight: 'normal' }}
+												]},
+												{type: 'FlowLayout', verticalAlign: 'middle', css: { marginRight: '160px', marginTop: 7, textAlign: 'right' }, id: 'sizeHBlock', children: [
+													{type: 'Label', text: __('Height'), css: { marginBottom: '0px', fontWeight: 'normal' }},
+													{type: 'TextField', id: 'sizeH', css: {width: 60}, styleClass: 'input-sm'},
+													{type: 'Label', text: ' px', css: { marginBottom: '0px', fontWeight: 'normal' }}
+												]}
+											]},
+											{type: 'VerticalLayout', css: {marginTop: 15}, children: [
+												{type: 'Label', text: __('Margin / Padding')},
+												{type: SpacingSelector, id: 'spacing'}
+											]}
+										]}
+									]}
+								]}
+							],
+							buttons: [
+								{name: __('Close'), click: function() { editDialog.hide(); }},
+								{name: __('Apply'), primary: true, click: function() {
+									var element = CKEDITOR.plugins.wbimages.getSelectedImage(editor);
+									if (!element) return;
+									
+									var fields = editDialog.fields;
+									var spacing = fields.spacing.getValue();
+									var styleStr = '';
+									styleStr += 'opacity:' + fields.opacity.getValue() / 100 + ';';
+									styleStr += 'margin:' + spacing.css.margin + ';';
+									styleStr += 'padding:' + spacing.css.padding + ';';
+									styleStr += 'max-width:' + fields.sizeW.getValue() + 'px;';
+									styleStr += 'max-height:' + fields.sizeH.getValue() + 'px;';
+									styleStr += 'width:100%;';
+									styleStr += 'height:auto;';
+									styleStr += fields.corners.getValue().cssRaw;
+									styleStr += fields.border.getValue().cssRaw;
+									if (fields.float)
+										styleStr += 'float:' + fields.float + ';';
+									var attributes = {};
+									attributes.src = wb_builder.makeLocalUrl(fields.imageUrl.getValue());
+									attributes.style = styleStr;
+									attributes['data-alt'] = JSON.stringify(fields.alt.getValue());
+									attributes.alt = __tr(fields.alt.getValue());
+									attributes['data-enlarge'] = fields.linkTypeEnlarge.getValue() ? 'true' : 'false';
+									var style = new CKEDITOR.style({element: 'img', attributes: attributes});
+									style.type = CKEDITOR.STYLE_INLINE;
+									style.applyToObject(element);
+									editDialog.hide();
+								}}
+							]
+						};
+						editDialog = new WB_PropertyDialog(__('Properties'), uiDef);
+						var fields = editDialog.fields;
+						var aspectInputTrigger = function(w) {
+							var keep = !('keepAspectRatio' in fields) || fields.keepAspectRatio;
+							if (keep) {
+								var img = new Image();
+								img.onload = function() {
+									var ratio = this.width / this.height,
+										value = parseInt((w ? fields.sizeW.getValue() : fields.sizeH.getValue()), 10);
+									if (w) {
+										fields.sizeH.setValue(parseInt(value / ratio, 10));
+									} else {
+										fields.sizeW.setValue(parseInt(value * ratio, 10));
+									}
+								};
+								img.src = wb_builder.makeLocalUrl(fields.imageUrl.getValue());
+							}
+						};
+						var aspectDiv = $('<div class="aspect-div"></div>');
+						var aspectBox = $('<div class="aspect-box ico-aspect-ratio"></div>').attr('title', __('Keep aspect ratio'));
+						aspectBox.on('click', function () {
+							if ($(this).hasClass('ico-aspect-ratio')) {
+								$(this).removeClass('ico-aspect-ratio');
+								$(this).addClass('ico-aspect-ratio-off');
+								fields.keepAspectRatio = false;
+							} else {
+								$(this).addClass('ico-aspect-ratio');
+								$(this).removeClass('ico-aspect-ratio-off');
+								fields.keepAspectRatio = true;
+								aspectInputTrigger(true);
+							}
+						});
+						aspectDiv.append(aspectBox);
+						fields.sizeW.getElem().parent().css('position', 'relative').append(aspectDiv);
+						fields.sizeW.on('change', function() { aspectInputTrigger(true); });
+						fields.sizeH.on('change', function() { aspectInputTrigger(false); });
+
+						var resetBtn = new UIButton.UIButton(__('Reset size'), UIButton.UIButton.STYLE_DEFAULT, 'glyphicon glyphicon-fullscreen');
+						resetBtn.addClass('btn-xs');
+						resetBtn.on('click', function() {
+							var img = new Image();
+							img.onload = function() {
+								fields.sizeW.setValue(this.width);
+								fields.sizeH.setValue(this.height);
+							};
+							img.src = wb_builder.makeLocalUrl(fields.imageUrl.getValue());
+						});
+						
+						resetBtn.getElem().css({ position: 'absolute', top: '35px', left: '-10px' });
+						fields.sizeH.getElem().parent().css({ position: 'relative' });
+						fields.sizeHBlock.getElem().css({ 'padding-bottom': '28px' });
+						fields.sizeH.getElem().parent().append(resetBtn.getElem());
+					}
+					var fields = editDialog.fields;
+					fields.sizeW.setValue(data.sizeW);
+					fields.sizeH.setValue(data.sizeH);
+					fields.opacity.setValue(data.opacity);
+					fields.spacing.setValue(spacingData);
+					fields.imageUrl.setValue(data.imageUrl, true);
+					fields.corners.setValue(data.corners);
+					fields.border.setValue(data.border);
+					fields.linkTypeEnlarge.setValue(data.enlarge);
+					fields.alt.setValue(data.alt);
+					fields.float = data.float;
+					editDialog.setVisible(true);
+				});
+			},
+			allowedContent: 'img[src]{*}(*)'
+		});
+
+		// If the toolbar is available, create the "Source" button.
+		if (editor.ui.addButton) {
+			editor.ui.addButton('WBImage', {
+				label: __('Image'),
+				command: 'add_wbimage',
+				toolbar: 'mode,11'
+			});
+		}
+
+		editor.on('doubleclick', function (evt) {
+			evt.stop();
+
+			var element = CKEDITOR.plugins.wbimages.getSelectedImage(editor) || (evt && evt.data.element);
+
+			if (!element.isReadOnly()) {
+				if (element.is('img')) {
+					editor.getSelection().selectElement(element);
+					editor.execCommand('edit_wbimage');
+				}
+			}
+		});
+		
+		var draggedImg;
+		editor.on('dragstart', function(evt) {
+			if (evt.data.target.$ instanceof HTMLImageElement) {
+				evt.stop();
+				draggedImg = evt.data.target;
+			}
+		});
+		editor.on('drop', function(evt) {
+			if (draggedImg) {
+				evt.stop();
+				evt.data.dropRange.insertNode(draggedImg);
+				draggedImg = null;
+			}
+		});
+	}
+});
+
+/**
+ * Set of image plugin's helpers.
+ *
+ * @class
+ * @singleton
+ */
+CKEDITOR.plugins.wbimages = {
+	/**
+	 * Get the selected image.
+	 * @since 3.2.1
+	 * @param {CKEDITOR.editor} editor
+	 */
+	getSelectedImage: function (editor) {
+		var selection = editor.getSelection();
+		var selectedElement = selection.getSelectedElement();
+		if (selectedElement && selectedElement.is('img'))
+			return selectedElement;
+		return null;
+	}
+};
+
+});
